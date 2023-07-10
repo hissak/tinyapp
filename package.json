@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/hissak/tinyapp/issues"
   },
-  "homepage": "https://github.com/hissak/tinyapp#readme"
+  "homepage": "https://github.com/hissak/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
