@@ -71,8 +71,13 @@ app.get("/urls/:id", (req, res) => {
     id: req.params.id, 
     longURL: urlDatabase[req.params.id], 
     username: req.cookies['username'] };
-    
+
   res.render("urls_show", templateVars);
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls')
 });
 
 const generateRandomString = function(len) {
