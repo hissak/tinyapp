@@ -44,6 +44,17 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect('/urls')
 });
 
+app.post("/urls/:id/update", (req, res) => {
+  const { id } = req.params;
+  console.log('id: ', id)
+  console.log('req.body: ',req.body);
+  const newURL = req.body.longURL
+  console.log('database before:', urlDatabase)
+  urlDatabase[id] = newURL
+  console.log('database after: ', urlDatabase);
+  res.redirect('/urls')
+});
+
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]/* What goes here? */ };
   res.render("urls_show", templateVars);
