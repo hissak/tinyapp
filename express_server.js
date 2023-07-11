@@ -36,6 +36,14 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+app.post("/urls/:id/delete", (req, res) => {
+  const { id } = req.params;
+  console.log('id: ', id)
+  delete urlDatabase[id];
+  console.log(urlDatabase);
+  res.redirect('/urls')
+});
+
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]/* What goes here? */ };
   res.render("urls_show", templateVars);
