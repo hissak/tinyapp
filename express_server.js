@@ -13,6 +13,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
 app.use(cookieParser());
 
 app.get("/urls", (req, res) => {
@@ -37,7 +50,8 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { urls: urlDatabase, username: req.cookies['username'] };
+  res.render("urls_new", templateVars);
 });
 
 app.post("/login", (req, res) => {
@@ -101,6 +115,33 @@ app.post("/urls", (req, res) => {
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id]
   res.redirect(longURL);
+});
+
+app.post("/register", (req, res) => {
+  console.log(req.body);
+  const newID = generateRandomString(6)
+  const email = req.body['email'];
+  const password = req.body['password'];
+  users[newID] = {};
+  users[newID]['id'] = newID;
+  users[newID]['email'] = email;
+  users[newID]['password'] = password;
+  console.log('users ===>  ', users)
+  res.clearCookie('username')
+  res.cookie('username', users[newID].id);
+  res.redirect('/urls')
+});
+
+app.get("/register", (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies['username']
+  };
+  if (!templateVars.username) {
+    res.render('register', templateVars);
+  } else {
+    res.send(`You are already logged in as ${templateVars.username}!`)
+  };
 });
 
 
