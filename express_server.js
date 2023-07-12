@@ -29,7 +29,10 @@ const users = {
 app.use(cookieParser());
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies['username'] };
+  const templateVars = { urls: urlDatabase, users: users, user_id: req.cookies['user_id'] };
+  console.log('cookies ===> ', req.cookies);
+  console.log('users ===> ', users)
+
   res.render("urls_index", templateVars);
 });
 
@@ -50,13 +53,13 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies['username'] };
+  const templateVars = { urls: urlDatabase, users: users, user_id: req.cookies['user_id'] };
   res.render("urls_new", templateVars);
 });
 
 app.post("/login", (req, res) => {
   console.log(req.body);
-  const username = req.body['username'];
+  const user_id = req.body['username'];
   res.cookie('username', username);
   res.redirect('/urls')
 });
@@ -84,13 +87,15 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = { 
     id: req.params.id, 
     longURL: urlDatabase[req.params.id], 
-    username: req.cookies['username'] };
+    user_id: req.cookies['user_id'],
+    users: users
+  };
 
   res.render("urls_show", templateVars);
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls')
 });
 
@@ -128,19 +133,21 @@ app.post("/register", (req, res) => {
   users[newID]['password'] = password;
   console.log('users ===>  ', users)
   res.clearCookie('username')
-  res.cookie('username', users[newID].id);
+  res.cookie('user_id', users[newID].id);
   res.redirect('/urls')
 });
 
+// Stops registration if user is already logged in.
 app.get("/register", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies['username']
+    users: users,
+    user_id: req.cookies['user_id']
   };
-  if (!templateVars.username) {
+  if (!templateVars.user_id) {
     res.render('register', templateVars);
   } else {
-    res.send(`You are already logged in as ${templateVars.username}!`)
+    res.send(`You are already logged in as ${templateVars.user_id}!`)
   };
 });
 
