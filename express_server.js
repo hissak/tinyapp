@@ -26,6 +26,15 @@ const users = {
   },
 };
 
+const emailExists = function(email) {
+  for (let id in users) {
+    if (users[id]['email'] === email) {
+      return true;
+    }
+  }
+  return null;
+}
+
 app.use(cookieParser());
 
 app.get("/urls", (req, res) => {
@@ -127,14 +136,25 @@ app.post("/register", (req, res) => {
   const newID = generateRandomString(6)
   const email = req.body['email'];
   const password = req.body['password'];
+  if (!email || !password) {
+    res.status(400);
+    console.log('Users after failure ====> ', users)
+    return res.send('Email/Password field cannot be blank!')
+  };
+  if(!emailExists(email)) {
   users[newID] = {};
   users[newID]['id'] = newID;
   users[newID]['email'] = email;
   users[newID]['password'] = password;
-  console.log('users ===>  ', users)
-  res.clearCookie('username')
+  console.log('users ===>  ', users);
+  res.clearCookie('user_id');
   res.cookie('user_id', users[newID].id);
-  res.redirect('/urls')
+  res.redirect('/urls');
+  } else {
+    res.status(400);
+    console.log('Users after failure ====> ', users)
+    return res.send('Email already in use!');
+  };
 });
 
 // Stops registration if user is already logged in.
