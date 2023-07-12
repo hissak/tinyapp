@@ -68,7 +68,7 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/login", (req, res) => {
   console.log(req.body);
-  const user_id = req.body['username'];
+  const email = req.body['email'];
   res.cookie('username', username);
   res.redirect('/urls')
 });
@@ -166,6 +166,19 @@ app.get("/register", (req, res) => {
   };
   if (!templateVars.user_id) {
     res.render('register', templateVars);
+  } else {
+    res.send(`You are already logged in as ${templateVars.user_id}!`)
+  };
+});
+
+app.get("/login", (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    users: users,
+    user_id: req.cookies['user_id']
+  };
+  if (!templateVars.user_id) {
+    res.render('login', templateVars);
   } else {
     res.send(`You are already logged in as ${templateVars.user_id}!`)
   };
