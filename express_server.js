@@ -31,17 +31,7 @@ const users = {
   }
 };
 
-const passwordMatch = function(password) {
-  for (let id in users) {
-    if (bcrypt.compareSync(password, users[id]['password'])) {
-      return true;
-    }
-  }
-  return null;
-};
-
-const { getUserIDByEmail, emailMatch } = require('./helpers');
-
+const { getUserIDByEmail, emailMatch, passwordMatch } = require('./helpers');
 
 const idMatch = function(id) {
   for (let key in urlDatabase) {
@@ -124,7 +114,7 @@ app.post("/login", (req, res) => {
   console.log(req.body);
   const formEmail = req.body['email'];
   const formPassword = req.body['password'];
-  if (emailMatch(formEmail, users) && passwordMatch(formPassword)) {
+  if (emailMatch(formEmail, users) && passwordMatch(formPassword, users)) {
     const user_id = getUserIDByEmail(formEmail, users);
     req.session.user_id = user_id;
     res.redirect('/urls');
