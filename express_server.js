@@ -26,10 +26,27 @@ const users = {
   },
 };
 
-const emailExists = function(email) {
+const emailMatch = function(email) {
   for (let id in users) {
     if (users[id]['email'] === email) {
       return true;
+    }
+  }
+  return null;
+}
+const passwordMatch = function(password) {
+  for (let id in users) {
+    if (users[id]['password'] === password) {
+      return true;
+    }
+  }
+  return null;
+}
+
+const getUserID = function(email) {
+  for (id in users) {
+    if (users[id]['email'] === email) {
+      return id;
     }
   }
   return null;
@@ -68,10 +85,23 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/login", (req, res) => {
   console.log(req.body);
-  const email = req.body['email'];
-  res.cookie('username', username);
-  res.redirect('/urls')
+  const formEmail = req.body['email'];
+  const formPassword = req.body['password'];
+  if (emailMatch(formEmail) && passwordMatch(formPassword)) {
+    const user_id = getUserID(formEmail);
+    res.cookie('user_id', user_id);
+    res.redirect('/urls');
+  } else {
+    res.status(403);
+    res.send('Email or Password incorrect!');
+  }
 });
+
+app.post("/logout", (req, res) => {
+  res.clearCookie('user_id');
+  res.redirect('/login')
+});
+
 
 app.post("/urls/:id/delete", (req, res) => {
   const { id } = req.params;
@@ -101,11 +131,6 @@ app.get("/urls/:id", (req, res) => {
   };
 
   res.render("urls_show", templateVars);
-});
-
-app.post("/logout", (req, res) => {
-  res.clearCookie('user_id');
-  res.redirect('/urls')
 });
 
 const generateRandomString = function(len) {
@@ -141,7 +166,7 @@ app.post("/register", (req, res) => {
     console.log('Users after failure ====> ', users)
     return res.send('Email/Password field cannot be blank!')
   };
-  if(!emailExists(email)) {
+  if(!emailMatch(email)) {
   users[newID] = {};
   users[newID]['id'] = newID;
   users[newID]['email'] = email;
