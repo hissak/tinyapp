@@ -80,6 +80,9 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { urls: urlDatabase, users: users, user_id: req.cookies['user_id'] };
+  if (!templateVars.user_id) {
+    return res.redirect('/login')
+  };
   res.render("urls_new", templateVars);
 });
 
@@ -145,6 +148,15 @@ const generateRandomString = function(len) {
 };
 
 app.post("/urls", (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    users: users,
+    user_id: req.cookies['user_id']
+  };
+  if (!templateVars.user_id) {
+    console.log('URLs if logged out ===> ', urlDatabase);
+    return res.send('Must be logged in to shorten URLs')
+  };
   const shortURL = generateRandomString(6);
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = longURL;
@@ -189,6 +201,9 @@ app.get("/register", (req, res) => {
     users: users,
     user_id: req.cookies['user_id']
   };
+  if (templateVars.user_id) {
+    return res.redirect('/urls');
+  };
   if (!templateVars.user_id) {
     res.render('register', templateVars);
   } else {
@@ -201,6 +216,9 @@ app.get("/login", (req, res) => {
     urls: urlDatabase,
     users: users,
     user_id: req.cookies['user_id']
+  };
+  if (templateVars.user_id) {
+    return res.redirect('/urls');
   };
   if (!templateVars.user_id) {
     res.render('login', templateVars);
