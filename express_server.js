@@ -83,6 +83,17 @@ const urlsForUser = function(id) {
   return userURLs;
 };
 
+const generateRandomString = function(len) {
+  const alphabetString = 'abcdefghijklmnopqrstuvwxyz';
+  let randomArray = [];
+  for (let i = 0; i < len; i++) {
+    let randomIndex = Math.floor(Math.random() * (alphabetString.length - 1));
+    randomArray.push(alphabetString[randomIndex]);
+  }
+  let randomURL = randomArray.join('');
+  return randomURL;
+};
+
 app.use(cookieParser());
 
 app.get("/urls", (req, res) => {
@@ -154,15 +165,27 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect('/urls')
 });
 
-app.post("/urls/:id/update", (req, res) => {
+app.post("/urls/:id", (req, res) => {
   const { id } = req.params;
-  console.log('id: ', id)
-  console.log('req.body: ',req.body);
-  const newURL = req.body.longURL
-  console.log('database before:', urlDatabase)
-  urlDatabase[id] = newURL
-  console.log('database after: ', urlDatabase);
-  res.redirect('/urls')
+  const newURL = req.body.longURL;
+  const user_id = req.cookies('user_id');
+  if (!urlDatabase[id]) {
+    res.status(404);
+    return res.send('Shortened URL does not exist!');
+  };
+  if (!user_id) {
+    res.status(403);
+    return res.send('Must be logged in to update URLs!');
+  };
+  if (urlDatabase[id]['user_id'] !== user_id) {
+    res.status(403);
+    return res.send('Not authorized to update this URL!')
+  } else {
+    console.log('database before:', urlDatabase)
+    urlDatabase[id].longURL = newURL
+    console.log('database after: ', urlDatabase);
+    res.redirect('/urls')
+  };
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -172,20 +195,17 @@ app.get("/urls/:id", (req, res) => {
     user_id: req.cookies['user_id'],
     users: users
   };
-
+  if(!templateVars.user_id) {
+    res.status(403);
+    return res.send('Must be logged in to view URL.');
+  };
+  const id = req.params.id;
+  if (urlDatabase[id].userID !== templateVars.user_id) {
+    res.status(403);
+    res.send('Not authorized to view this URL');
+  };
   res.render("urls_show", templateVars);
 });
-
-const generateRandomString = function(len) {
-  const alphabetString = 'abcdefghijklmnopqrstuvwxyz';
-  let randomArray = [];
-  for (let i = 0; i < len; i++) {
-    let randomIndex = Math.floor(Math.random() * (alphabetString.length - 1));
-    randomArray.push(alphabetString[randomIndex]);
-  }
-  let randomURL = randomArray.join('');
-  return randomURL;
-};
 
 app.post("/urls", (req, res) => {
   const templateVars = {
