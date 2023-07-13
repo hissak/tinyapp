@@ -27,4 +27,14 @@ const passwordMatch = function(password, database) {
   return null;
 };
 
-module.exports = { getUserIDByEmail, emailMatch, passwordMatch }
+const urlsForUser = function(id, database) {
+  let userURLs = {};
+  for (let shortURL in database) {
+    if (database[shortURL].userID === id) {
+      userURLs[shortURL] = database[shortURL].longURL;
+    }
+  }
+  return userURLs;
+};
+
+module.exports = { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser }

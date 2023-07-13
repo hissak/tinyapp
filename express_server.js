@@ -10,7 +10,6 @@ app.use(cookieSession({
 }));
 app.set("view engine", "ejs");
 
-
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -31,7 +30,7 @@ const users = {
   }
 };
 
-const { getUserIDByEmail, emailMatch, passwordMatch } = require('./helpers');
+const { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser } = require('./helpers');
 
 const idMatch = function(id) {
   for (let key in urlDatabase) {
@@ -40,16 +39,6 @@ const idMatch = function(id) {
     }
   }
   return null;
-};
-
-const urlsForUser = function(id) {
-  let userURLs = {};
-  for (let shortURL in urlDatabase) {
-    if (urlDatabase[shortURL].userID === id) {
-      userURLs[shortURL] = urlDatabase[shortURL].longURL;
-    }
-  }
-  return userURLs;
 };
 
 const generateRandomString = function(len) {
@@ -76,7 +65,7 @@ app.get("/urls", (req, res) => {
   console.log('cookies ===> ', req.session);
   console.log('users ===> ', users);
   console.log('URLs ===> ', urlDatabase);
-  const userURLs = urlsForUser(templateVars.user_id);
+  const userURLs = urlsForUser(templateVars.user_id, urlDatabase);
   templateVars.urls = userURLs;
   res.render("urls_index", templateVars);
 });
