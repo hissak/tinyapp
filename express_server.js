@@ -30,6 +30,11 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk",
   },
+  aJ48lW: {
+    id: "aJ48lW",
+    email: "hola@gmail.com",
+    password: "hola",
+  },
 };
 
 const emailMatch = function(email) {
@@ -39,7 +44,8 @@ const emailMatch = function(email) {
     }
   }
   return null;
-}
+};
+
 const passwordMatch = function(password) {
   for (let id in users) {
     if (users[id]['password'] === password) {
@@ -47,7 +53,7 @@ const passwordMatch = function(password) {
     }
   }
   return null;
-}
+};
 
 const getUserID = function(email) {
   for (id in users) {
@@ -56,7 +62,7 @@ const getUserID = function(email) {
     }
   }
   return null;
-}
+};
 
 const idMatch = function(id) {
   for (let key in urlDatabase) {
@@ -65,15 +71,34 @@ const idMatch = function(id) {
     }
   }
   return null;
-}
+};
+
+const urlsForUser = function(id) {
+  let userURLs = {};
+  for (let shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      userURLs[shortURL] = urlDatabase[shortURL].longURL;
+    }
+  };
+  return userURLs;
+};
 
 app.use(cookieParser());
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, users: users, user_id: req.cookies['user_id'] };
+  const templateVars = {
+    urls: urlDatabase,
+    users: users,
+    user_id: req.cookies['user_id']
+  };
+  if (!templateVars.user_id) {
+    res.status(403);
+    return res.send('Must be logged in to view URLs');
+  }
   console.log('cookies ===> ', req.cookies);
-  console.log('users ===> ', users)
-
+  console.log('users ===> ', users);
+  const userURLs = urlsForUser(templateVars.user_id);
+  templateVars.urls = userURLs;
   res.render("urls_index", templateVars);
 });
 
