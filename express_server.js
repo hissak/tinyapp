@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -56,7 +56,7 @@ const passwordMatch = function(password) {
 };
 
 const getUserID = function(email) {
-  for (id in users) {
+  for (let id in users) {
     if (users[id]['email'] === email) {
       return id;
     }
@@ -79,7 +79,7 @@ const urlsForUser = function(id) {
     if (urlDatabase[shortURL].userID === id) {
       userURLs[shortURL] = urlDatabase[shortURL].longURL;
     }
-  };
+  }
   return userURLs;
 };
 
@@ -132,8 +132,8 @@ app.get("/hello", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const templateVars = { urls: urlDatabase, users: users, user_id: req.cookies['user_id'] };
   if (!templateVars.user_id) {
-    return res.redirect('/login')
-  };
+    return res.redirect('/login');
+  }
   res.render("urls_new", templateVars);
 });
 
@@ -153,7 +153,7 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
-  res.redirect('/login')
+  res.redirect('/login');
 });
 
 
@@ -163,19 +163,19 @@ app.post("/urls/:id/delete", (req, res) => {
   if (!urlDatabase[id]) {
     res.status(404);
     return res.send('Shortened URL does not exist!');
-  };
+  }
   if (!user_id) {
     res.status(403);
     return res.send('Must be logged in to delete URLs!');
-  };
+  }
   if (urlDatabase[id]['user_id'] !== user_id) {
     res.status(403);
-    return res.send('Not authorized to delete this URL!')
+    return res.send('Not authorized to delete this URL!');
   } else {
     delete urlDatabase[id];
     console.log(urlDatabase);
     res.redirect('/urls');
-  };
+  }
 });
 
 app.post("/urls/:id", (req, res) => {
@@ -185,38 +185,38 @@ app.post("/urls/:id", (req, res) => {
   if (!urlDatabase[id]) {
     res.status(404);
     return res.send('Shortened URL does not exist!');
-  };
+  }
   if (!user_id) {
     res.status(403);
     return res.send('Must be logged in to update URLs!');
-  };
+  }
   if (urlDatabase[id]['user_id'] !== user_id) {
     res.status(403);
-    return res.send('Not authorized to update this URL!')
+    return res.send('Not authorized to update this URL!');
   } else {
-    console.log('database before:', urlDatabase)
-    urlDatabase[id].longURL = newURL
+    console.log('database before:', urlDatabase);
+    urlDatabase[id].longURL = newURL;
     console.log('database after: ', urlDatabase);
-    res.redirect('/urls')
-  };
+    res.redirect('/urls');
+  }
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { 
-    id: req.params.id, 
-    longURL: urlDatabase[req.params.id].longURL, 
+  const templateVars = {
+    id: req.params.id,
+    longURL: urlDatabase[req.params.id].longURL,
     user_id: req.cookies['user_id'],
     users: users
   };
-  if(!templateVars.user_id) {
+  if (!templateVars.user_id) {
     res.status(403);
     return res.send('Must be logged in to view URL.');
-  };
+  }
   const id = req.params.id;
   if (urlDatabase[id].userID !== templateVars.user_id) {
     res.status(403);
     res.send('Not authorized to view this URL!');
-  };
+  }
   res.render("urls_show", templateVars);
 });
 
@@ -229,8 +229,8 @@ app.post("/urls", (req, res) => {
   if (!templateVars.user_id) {
     console.log('URLs if logged out ===> ', urlDatabase);
     res.status(403);
-    return res.send('Must be logged in to shorten URLs')
-  };
+    return res.send('Must be logged in to shorten URLs');
+  }
   const shortURL = generateRandomString(6);
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = longURL;
@@ -242,34 +242,34 @@ app.get("/u/:id", (req, res) => {
   if (!idMatch(req.params.id)) {
     res.status(404);
     return res.send('URL not found!');
-  };
+  }
   res.redirect(longURL);
 });
 
 app.post("/register", (req, res) => {
   console.log(req.body);
-  const newID = generateRandomString(6)
+  const newID = generateRandomString(6);
   const email = req.body['email'];
   const password = req.body['password'];
   if (!email || !password) {
     res.status(400);
     console.log('Users after failure ====> ', users);
     return res.send('Email/Password field cannot be blank!');
-  };
-  if(!emailMatch(email)) {
-  users[newID] = {};
-  users[newID]['id'] = newID;
-  users[newID]['email'] = email;
-  users[newID]['password'] = password;
-  console.log('users ===>  ', users);
-  res.clearCookie('user_id');
-  res.cookie('user_id', users[newID].id);
-  res.redirect('/urls');
+  }
+  if (!emailMatch(email)) {
+    users[newID] = {};
+    users[newID]['id'] = newID;
+    users[newID]['email'] = email;
+    users[newID]['password'] = password;
+    console.log('users ===>  ', users);
+    res.clearCookie('user_id');
+    res.cookie('user_id', users[newID].id);
+    res.redirect('/urls');
   } else {
     res.status(400);
-    console.log('Users after failure ====> ', users)
+    console.log('Users after failure ====> ', users);
     return res.send('Email already in use!');
-  };
+  }
 });
 
 // Stops registration if user is already logged in.
@@ -281,12 +281,12 @@ app.get("/register", (req, res) => {
   };
   if (templateVars.user_id) {
     return res.redirect('/urls');
-  };
+  }
   if (!templateVars.user_id) {
     res.render('register', templateVars);
   } else {
-    res.send(`You are already logged in as ${templateVars.user_id}!`)
-  };
+    res.send(`You are already logged in as ${templateVars.user_id}!`);
+  }
 });
 
 app.get("/login", (req, res) => {
@@ -297,12 +297,12 @@ app.get("/login", (req, res) => {
   };
   if (templateVars.user_id) {
     return res.redirect('/urls');
-  };
+  }
   if (!templateVars.user_id) {
     res.render('login', templateVars);
   } else {
-    res.send(`You are already logged in as ${templateVars.user_id}!`)
-  };
+    res.send(`You are already logged in as ${templateVars.user_id}!`);
+  }
 });
 
 
