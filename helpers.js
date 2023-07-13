@@ -7,4 +7,13 @@ const getUserIDByEmail = function(email, database) {
   return undefined;
 };
 
-module.exports = { getUserIDByEmail }
+const emailMatch = function(email, database) {
+  for (let id in database) {
+    if (database[id]['email'] === email) {
+      return true;
+    }
+  }
+  return null;
+};
+
+module.exports = { getUserIDByEmail, emailMatch }

@@ -31,15 +31,6 @@ const users = {
   }
 };
 
-const emailMatch = function(email) {
-  for (let id in users) {
-    if (users[id]['email'] === email) {
-      return true;
-    }
-  }
-  return null;
-};
-
 const passwordMatch = function(password) {
   for (let id in users) {
     if (bcrypt.compareSync(password, users[id]['password'])) {
@@ -49,15 +40,8 @@ const passwordMatch = function(password) {
   return null;
 };
 
-const { getUserIDByEmail } = require('./helpers');
-// //function(email, database) {
-//   for (let user in database) {
-//     if (users[user]['email'] === email) {
-//       return user;
-//     }
-//   }
-//   return null;
-// };
+const { getUserIDByEmail, emailMatch } = require('./helpers');
+
 
 const idMatch = function(id) {
   for (let key in urlDatabase) {
@@ -140,7 +124,7 @@ app.post("/login", (req, res) => {
   console.log(req.body);
   const formEmail = req.body['email'];
   const formPassword = req.body['password'];
-  if (emailMatch(formEmail) && passwordMatch(formPassword)) {
+  if (emailMatch(formEmail, users) && passwordMatch(formPassword)) {
     const user_id = getUserIDByEmail(formEmail, users);
     req.session.user_id = user_id;
     res.redirect('/urls');
@@ -269,7 +253,7 @@ app.post("/register", (req, res) => {
     console.log('Users after failure ====> ', users);
     return res.send('Email/Password field cannot be blank!');
   }
-  if (!emailMatch(email)) {
+  if (!emailMatch(email, users)) {
     users[newID] = {
       id: newID,
       email: email,
