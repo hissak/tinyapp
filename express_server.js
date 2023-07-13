@@ -159,16 +159,29 @@ app.post("/logout", (req, res) => {
 
 app.post("/urls/:id/delete", (req, res) => {
   const { id } = req.params;
-  console.log('id: ', id)
-  delete urlDatabase[id];
-  console.log(urlDatabase);
-  res.redirect('/urls')
+  const user_id = req.cookies['user_id'];
+  if (!urlDatabase[id]) {
+    res.status(404);
+    return res.send('Shortened URL does not exist!');
+  };
+  if (!user_id) {
+    res.status(403);
+    return res.send('Must be logged in to delete URLs!');
+  };
+  if (urlDatabase[id]['user_id'] !== user_id) {
+    res.status(403);
+    return res.send('Not authorized to delete this URL!')
+  } else {
+    delete urlDatabase[id];
+    console.log(urlDatabase);
+    res.redirect('/urls');
+  };
 });
 
 app.post("/urls/:id", (req, res) => {
   const { id } = req.params;
   const newURL = req.body.longURL;
-  const user_id = req.cookies('user_id');
+  const user_id = req.cookies['user_id'];
   if (!urlDatabase[id]) {
     res.status(404);
     return res.send('Shortened URL does not exist!');
@@ -202,7 +215,7 @@ app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   if (urlDatabase[id].userID !== templateVars.user_id) {
     res.status(403);
-    res.send('Not authorized to view this URL');
+    res.send('Not authorized to view this URL!');
   };
   res.render("urls_show", templateVars);
 });
