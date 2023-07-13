@@ -1,11 +1,9 @@
 const express = require("express");
 const app = express();
 const PORT = 8080;
-
+const bcrypt = require("bcryptjs");
 const cookieParser = require('cookie-parser');
-
 app.use(express.urlencoded({ extended: true }));
-
 app.set("view engine", "ejs");
 
 const urlDatabase = {
@@ -18,23 +16,14 @@ const urlDatabase = {
     userID: "aJ48lW",
   },
 };
-
+// password1 added to test password hashing and login.
+const password1 = bcrypt.hashSync("purple-monkey-dinosaur", 10);
 const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
-  aJ48lW: {
-    id: "aJ48lW",
-    email: "hola@gmail.com",
-    password: "hola",
-  },
+    password: password1,
+  }
 };
 
 const emailMatch = function(email) {
@@ -48,7 +37,7 @@ const emailMatch = function(email) {
 
 const passwordMatch = function(password) {
   for (let id in users) {
-    if (users[id]['password'] === password) {
+    if (bcrypt.compareSync(password, users[id]['password'])) {
       return true;
     }
   }
@@ -263,7 +252,7 @@ app.post("/register", (req, res) => {
     users[newID] = {};
     users[newID]['id'] = newID;
     users[newID]['email'] = email;
-    users[newID]['password'] = password;
+    users[newID]['password'] = bcrypt.hashSync(password, 10);
     console.log('users ===>  ', users);
     res.clearCookie('user_id');
     res.cookie('user_id', users[newID].id);
