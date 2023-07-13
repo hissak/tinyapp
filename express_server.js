@@ -9,8 +9,14 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 const users = {
@@ -137,7 +143,7 @@ app.post("/urls/:id/update", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const templateVars = { 
     id: req.params.id, 
-    longURL: urlDatabase[req.params.id], 
+    longURL: urlDatabase[req.params.id].longURL, 
     user_id: req.cookies['user_id'],
     users: users
   };
@@ -174,10 +180,10 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id]
+  const longURL = urlDatabase[req.params.id].longURL;
   if (!idMatch(req.params.id)) {
     res.status(404);
-    return res.send('URL not found!')
+    return res.send('URL not found!');
   };
   res.redirect(longURL);
 });
@@ -189,8 +195,8 @@ app.post("/register", (req, res) => {
   const password = req.body['password'];
   if (!email || !password) {
     res.status(400);
-    console.log('Users after failure ====> ', users)
-    return res.send('Email/Password field cannot be blank!')
+    console.log('Users after failure ====> ', users);
+    return res.send('Email/Password field cannot be blank!');
   };
   if(!emailMatch(email)) {
   users[newID] = {};
