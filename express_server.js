@@ -52,6 +52,15 @@ const getUserID = function(email) {
   return null;
 }
 
+const idMatch = function(id) {
+  for (let key in urlDatabase) {
+    if (key === id) {
+      return true;
+    }
+  }
+  return null;
+}
+
 app.use(cookieParser());
 
 app.get("/urls", (req, res) => {
@@ -155,6 +164,7 @@ app.post("/urls", (req, res) => {
   };
   if (!templateVars.user_id) {
     console.log('URLs if logged out ===> ', urlDatabase);
+    res.status(403);
     return res.send('Must be logged in to shorten URLs')
   };
   const shortURL = generateRandomString(6);
@@ -165,6 +175,10 @@ app.post("/urls", (req, res) => {
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id]
+  if (!idMatch(req.params.id)) {
+    res.status(404);
+    return res.send('URL not found!')
+  };
   res.redirect(longURL);
 });
 
