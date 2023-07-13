@@ -168,7 +168,7 @@ app.post("/urls/:id/delete", (req, res) => {
     res.status(403);
     return res.send('Must be logged in to delete URLs!');
   }
-  if (urlDatabase[id]['user_id'] !== user_id) {
+  if (urlDatabase[id]['userID'] !== user_id) {
     res.status(403);
     return res.send('Not authorized to delete this URL!');
   } else {
@@ -233,7 +233,10 @@ app.post("/urls", (req, res) => {
   }
   const shortURL = generateRandomString(6);
   const longURL = req.body.longURL;
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL] = {};
+  urlDatabase[shortURL].longURL = longURL;
+  urlDatabase[shortURL].userID = templateVars['user_id'];
+  console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
 });
 
