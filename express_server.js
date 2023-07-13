@@ -49,14 +49,15 @@ const passwordMatch = function(password) {
   return null;
 };
 
-const getUserID = function(email) {
-  for (let id in users) {
-    if (users[id]['email'] === email) {
-      return id;
-    }
-  }
-  return null;
-};
+const { getUserIDByEmail } = require('./helpers');
+// //function(email, database) {
+//   for (let user in database) {
+//     if (users[user]['email'] === email) {
+//       return user;
+//     }
+//   }
+//   return null;
+// };
 
 const idMatch = function(id) {
   for (let key in urlDatabase) {
@@ -107,7 +108,12 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  const userID = req.session.user_ID;
+  if(!userID) {
+    return res.redirect('/login');
+  } else {
+    return res.redirect ('/urls');
+  }
 });
 
 app.listen(PORT, () => {
@@ -135,7 +141,7 @@ app.post("/login", (req, res) => {
   const formEmail = req.body['email'];
   const formPassword = req.body['password'];
   if (emailMatch(formEmail) && passwordMatch(formPassword)) {
-    const user_id = getUserID(formEmail);
+    const user_id = getUserIDByEmail(formEmail, users);
     req.session.user_id = user_id;
     res.redirect('/urls');
   } else {
@@ -197,6 +203,10 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  if(!idMatch(req.params.id)) {
+    res.status(404);
+    return res.send('URL not found!');
+  };
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
@@ -241,12 +251,12 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id].longURL;
   if (!idMatch(req.params.id)) {
     res.status(404);
     return res.send('URL not found!');
   }
-  res.redirect(longURL);
+  const longURL = urlDatabase[req.params.id].longURL;
+  return res.redirect(longURL);
 });
 
 app.post("/register", (req, res) => {
