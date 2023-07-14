@@ -10,6 +10,8 @@ app.use(cookieSession({
 }));
 app.set("view engine", "ejs");
 
+const { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser, idMatch, generateRandomString } = require('./helpers');
+
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -30,28 +32,26 @@ const users = {
   }
 };
 
-const { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser, idMatch, generateRandomString } = require('./helpers');
-
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     users: users,
-    user_id: req.session.user_id
+    userID: req.session.userID
   };
-  if (!templateVars.user_id) {
+  if (!templateVars.userID) {
     res.status(403);
     return res.send('Must be logged in to view URLs');
   }
   console.log('cookies ===> ', req.session);
   console.log('users ===> ', users);
   console.log('URLs ===> ', urlDatabase);
-  const userURLs = urlsForUser(templateVars.user_id, urlDatabase);
+  const userURLs = urlsForUser(templateVars.userID, urlDatabase);
   templateVars.urls = userURLs;
   res.render("urls_index", templateVars);
 });
 
 app.get("/", (req, res) => {
-  const userID = req.session.user_ID;
+  const userID = req.session.userID;
   if(!userID) {
     return res.redirect('/login');
   } else {
@@ -72,8 +72,8 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { urls: urlDatabase, users: users, user_id: req.session.user_id };
-  if (!templateVars.user_id) {
+  const templateVars = { urls: urlDatabase, users: users, userID: req.session.userID };
+  if (!templateVars.userID) {
     return res.redirect('/login');
   }
   res.render("urls_new", templateVars);
@@ -84,8 +84,8 @@ app.post("/login", (req, res) => {
   const formEmail = req.body['email'];
   const formPassword = req.body['password'];
   if (emailMatch(formEmail, users) && passwordMatch(formPassword, users)) {
-    const user_id = getUserIDByEmail(formEmail, users);
-    req.session.user_id = user_id;
+    const userID = getUserIDByEmail(formEmail, users);
+    req.session.userID = userID;
     res.redirect('/urls');
   } else {
     res.status(403);
@@ -98,19 +98,18 @@ app.post("/logout", (req, res) => {
   res.redirect('/login');
 });
 
-
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
-  const user_id = req.session.user_id;
+  const userID = req.session.userID;
   if (!urlDatabase[id]) {
     res.status(404);
     return res.send('Shortened URL does not exist!');
   }
-  if (!user_id) {
+  if (!userID) {
     res.status(403);
     return res.send('Must be logged in to delete URLs!');
   }
-  if (urlDatabase[id]['userID'] !== user_id) {
+  if (urlDatabase[id]['userID'] !== userID) {
     res.status(403);
     return res.send('Not authorized to delete this URL!');
   } else {
@@ -123,18 +122,18 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const id = req.params['id'];
   const newURL = req.body.longURL;
-  const user_id = req.session.user_id;
-  console.log('User ID cookie ====> ', user_id);
+  const userID = req.session.userID;
+  console.log('User ID cookie ====> ', userID);
   console.log('User ID database ==> ', id);
   if (!urlDatabase[id]) {
     res.status(404);
     return res.send('Shortened URL does not exist!');
   }
-  if (!user_id) {
+  if (!userID) {
     res.status(403);
     return res.send('Must be logged in to update URLs!');
   }
-  if (urlDatabase[id]['userID'] !== user_id) {
+  if (urlDatabase[id]['userID'] !== userID) {
     res.status(403);
     return res.send('Not authorized to update this URL!');
   } else {
@@ -153,18 +152,18 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
-    user_id: req.session.user_id,
+    userID: req.session.userID,
     users: users
   };
-  console.log('User ID cookie ====> ', templateVars.user_id);
+  console.log('User ID cookie ====> ', templateVars.userID);
   console.log('User ID database ==> ', templateVars.id);
-  if (!templateVars.user_id) {
+  if (!templateVars.userID) {
     res.status(403);
     return res.send('Must be logged in to view URL.');
   }
   const id = req.params.id;
-  if (urlDatabase[id].userID !== templateVars.user_id) {
-    console.log('test', urlDatabase[id].userID, templateVars.user_id, urlDatabase)
+  if (urlDatabase[id].userID !== templateVars.userID) {
+    console.log('test', urlDatabase[id].userID, templateVars.userID, urlDatabase)
     res.status(403);
     return res.send('Not authorized to view this URL!');
   }
@@ -176,9 +175,9 @@ app.post("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     users: users,
-    user_id: req.session.user_id
+    userID: req.session.userID
   };
-  if (!templateVars.user_id) {
+  if (!templateVars.userID) {
     console.log('URLs if logged out ===> ', urlDatabase);
     res.status(403);
     return res.send('Must be logged in to shorten URLs');
@@ -187,7 +186,7 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = {
     'longURL': longURL,
-    'userID': templateVars['user_id']
+    'userID': templateVars['userID']
   };
   console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
@@ -218,7 +217,7 @@ app.post("/register", (req, res) => {
       email: email,
       password: bcrypt.hashSync(password, 10)
     };
-    req.session.user_id = newID;
+    req.session.userID = newID;
     res.redirect('/urls');
   } else {
     res.status(400);
@@ -232,15 +231,15 @@ app.get("/register", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     users: users,
-    user_id: req.session.user_id
+    userID: req.session.userID
   };
-  if (templateVars.user_id) {
+  if (templateVars.userID) {
     return res.redirect('/urls');
   }
-  if (!templateVars.user_id) {
+  if (!templateVars.userID) {
     res.render('register', templateVars);
   } else {
-    res.send(`You are already logged in as ${templateVars.user_id}!`);
+    res.send(`You are already logged in as ${templateVars.userID}!`);
   }
 });
 
@@ -248,15 +247,15 @@ app.get("/login", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     users: users,
-    user_id: req.session.user_id
+    userID: req.session.userID
   };
-  if (templateVars.user_id) {
+  if (templateVars.userID) {
     return res.redirect('/urls');
   }
-  if (!templateVars.user_id) {
+  if (!templateVars.userID) {
     res.render('login', templateVars);
   } else {
-    res.send(`You are already logged in as ${templateVars.user_id}!`);
+    res.send(`You are already logged in as ${templateVars.userID}!`);
   }
 });
 
