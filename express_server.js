@@ -30,16 +30,8 @@ const users = {
   }
 };
 
-const { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser } = require('./helpers');
+const { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser, idMatch } = require('./helpers');
 
-const idMatch = function(id) {
-  for (let key in urlDatabase) {
-    if (key === id) {
-      return true;
-    }
-  }
-  return null;
-};
 
 const generateRandomString = function(len) {
   const alphabetString = 'abcdefghijklmnopqrstuvwxyz';
@@ -166,7 +158,7 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  if(!idMatch(req.params.id)) {
+  if(!idMatch(req.params.id, urlDatabase)) {
     res.status(404);
     return res.send('URL not found!');
   };
@@ -214,7 +206,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  if (!idMatch(req.params.id)) {
+  if (!idMatch(req.params.id, urlDatabase)) {
     res.status(404);
     return res.send('URL not found!');
   }

@@ -37,4 +37,13 @@ const urlsForUser = function(id, database) {
   return userURLs;
 };
 
-module.exports = { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser }
+const idMatch = function(id, database) {
+  for (let key in database) {
+    if (key === id) {
+      return true;
+    }
+  }
+  return null;
+};
+
+module.exports = { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser, idMatch }
