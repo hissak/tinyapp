@@ -10,6 +10,10 @@ app.use(cookieSession({
 }));
 app.set("view engine", "ejs");
 
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
+
 const { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser, idMatch, generateRandomString } = require('./helpers');
 
 const urlDatabase = {
@@ -32,6 +36,149 @@ const users = {
   }
 };
 
+
+
+// HOMEPAGE
+
+// GET request to access homepage. Will redrect to /urls if logged in, otherwise will redirect to login page.
+app.get("/", (req, res) => {
+  const userID = req.session.userID;
+  if(!userID) {
+    return res.redirect('/login');
+  } else {
+    return res.redirect ('/urls');
+  }
+});
+
+
+
+// USER REGISTRATION
+
+// GET request to access registration page. If already logged in, redirects to /urls
+app.get("/register", (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    users: users,
+    userID: req.session.userID
+  };
+  if (templateVars.userID) {
+    return res.redirect('/urls');
+  }
+  if (!templateVars.userID) {
+    res.render('register', templateVars);
+  } else {
+    res.send(`You are already logged in as ${templateVars.userID}!`);
+  }
+});
+
+//POST request generate new account, after verifying that all fields have been field, and email is not already in use.
+app.post("/register", (req, res) => {
+  console.log(req.body);
+  const newID = generateRandomString(6);
+  const email = req.body['email'];
+  const password = req.body['password'];
+  if (!email || !password) {
+    res.status(400);
+    console.log('Users after failure ====> ', users);
+    return res.send('Email/Password field cannot be blank!');
+  }
+  if (!emailMatch(email, users)) {
+    users[newID] = {
+      id: newID,
+      email: email,
+      password: bcrypt.hashSync(password, 10)
+    };
+    req.session.userID = newID;
+    res.redirect('/urls');
+  } else {
+    res.status(400);
+    console.log('Users after failure ====> ', users);
+    return res.send('Email already in use!');
+  }
+});
+
+
+
+//USER LOGIN & LOGOUT
+
+//GET request to access login page. If already logged in, redirects to /urls
+app.get("/login", (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    users: users,
+    userID: req.session.userID
+  };
+  if (templateVars.userID) {
+    return res.redirect('/urls');
+  }
+  if (!templateVars.userID) {
+    res.render('login', templateVars);
+  } else {
+    res.send(`You are already logged in as ${templateVars.userID}!`);
+  }
+});
+
+//POST request to login and create new session. Verifies that login info is correct.
+app.post("/login", (req, res) => {
+  console.log(req.body);
+  const formEmail = req.body['email'];
+  const formPassword = req.body['password'];
+  if (emailMatch(formEmail, users) && passwordMatch(formPassword, users)) {
+    const userID = getUserIDByEmail(formEmail, users);
+    req.session.userID = userID;
+    res.redirect('/urls');
+  } else {
+    res.status(403);
+    res.send('Email or Password incorrect!');
+  }
+});
+
+//POST request for logout. Clears session.
+app.post("/logout", (req, res) => {
+  req.session = null;
+  res.redirect('/login');
+});
+
+
+
+// URL GENERATOR
+
+// GET request to access short URL generator only when logged in
+app.get("/urls/new", (req, res) => {
+  const templateVars = { urls: urlDatabase, users: users, userID: req.session.userID };
+  if (!templateVars.userID) {
+    return res.redirect('/login');
+  }
+  res.render("urls_new", templateVars);
+});
+
+// POST request to generate new short URL. Verifies that user is logged in before generating anything.
+app.post("/urls", (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    users: users,
+    userID: req.session.userID
+  };
+  if (!templateVars.userID) {
+    console.log('URLs if logged out ===> ', urlDatabase);
+    res.status(403);
+    return res.send('Must be logged in to shorten URLs');
+  }
+  const shortURL = generateRandomString(6);
+  const longURL = req.body.longURL;
+  urlDatabase[shortURL] = {
+    'longURL': longURL,
+    'userID': templateVars['userID']
+  };
+  console.log(urlDatabase);
+  res.redirect(`/urls/${shortURL}`);
+});
+
+
+
+//URLS INDEX
+
+// GET request to access /URLs only if logged in.
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -50,100 +197,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-app.get("/", (req, res) => {
-  const userID = req.session.userID;
-  if(!userID) {
-    return res.redirect('/login');
-  } else {
-    return res.redirect ('/urls');
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-app.get("/urls/new", (req, res) => {
-  const templateVars = { urls: urlDatabase, users: users, userID: req.session.userID };
-  if (!templateVars.userID) {
-    return res.redirect('/login');
-  }
-  res.render("urls_new", templateVars);
-});
-
-app.post("/login", (req, res) => {
-  console.log(req.body);
-  const formEmail = req.body['email'];
-  const formPassword = req.body['password'];
-  if (emailMatch(formEmail, users) && passwordMatch(formPassword, users)) {
-    const userID = getUserIDByEmail(formEmail, users);
-    req.session.userID = userID;
-    res.redirect('/urls');
-  } else {
-    res.status(403);
-    res.send('Email or Password incorrect!');
-  }
-});
-
-app.post("/logout", (req, res) => {
-  req.session = null;
-  res.redirect('/login');
-});
-
-app.post("/urls/:id/delete", (req, res) => {
-  const id = req.params.id;
-  const userID = req.session.userID;
-  if (!urlDatabase[id]) {
-    res.status(404);
-    return res.send('Shortened URL does not exist!');
-  }
-  if (!userID) {
-    res.status(403);
-    return res.send('Must be logged in to delete URLs!');
-  }
-  if (urlDatabase[id]['userID'] !== userID) {
-    res.status(403);
-    return res.send('Not authorized to delete this URL!');
-  } else {
-    delete urlDatabase[id];
-    console.log(urlDatabase);
-    res.redirect('/urls');
-  }
-});
-
-app.post("/urls/:id", (req, res) => {
-  const id = req.params['id'];
-  const newURL = req.body.longURL;
-  const userID = req.session.userID;
-  console.log('User ID cookie ====> ', userID);
-  console.log('User ID database ==> ', id);
-  if (!urlDatabase[id]) {
-    res.status(404);
-    return res.send('Shortened URL does not exist!');
-  }
-  if (!userID) {
-    res.status(403);
-    return res.send('Must be logged in to update URLs!');
-  }
-  if (urlDatabase[id]['userID'] !== userID) {
-    res.status(403);
-    return res.send('Not authorized to update this URL!');
-  } else {
-    console.log('database before:', urlDatabase);
-    urlDatabase[id].longURL = newURL;
-    console.log('database after: ', urlDatabase);
-    res.redirect('/urls');
-  }
-});
-
+// GET request to view details of short URLs. Verifies that the URL exists and belongs to user before displaying.
 app.get("/urls/:id", (req, res) => {
   if(!idMatch(req.params.id, urlDatabase)) {
     res.status(404);
@@ -171,27 +225,7 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.post("/urls", (req, res) => {
-  const templateVars = {
-    urls: urlDatabase,
-    users: users,
-    userID: req.session.userID
-  };
-  if (!templateVars.userID) {
-    console.log('URLs if logged out ===> ', urlDatabase);
-    res.status(403);
-    return res.send('Must be logged in to shorten URLs');
-  }
-  const shortURL = generateRandomString(6);
-  const longURL = req.body.longURL;
-  urlDatabase[shortURL] = {
-    'longURL': longURL,
-    'userID': templateVars['userID']
-  };
-  console.log(urlDatabase);
-  res.redirect(`/urls/${shortURL}`);
-});
-
+//GET request to access long URL via the short URL. Does not require user to be logged in. Verifies that short URL exists.
 app.get("/u/:id", (req, res) => {
   if (!idMatch(req.params.id, urlDatabase)) {
     res.status(404);
@@ -201,63 +235,65 @@ app.get("/u/:id", (req, res) => {
   return res.redirect(longURL);
 });
 
-app.post("/register", (req, res) => {
-  console.log(req.body);
-  const newID = generateRandomString(6);
-  const email = req.body['email'];
-  const password = req.body['password'];
-  if (!email || !password) {
-    res.status(400);
-    console.log('Users after failure ====> ', users);
-    return res.send('Email/Password field cannot be blank!');
+
+
+// DELETING URLS
+
+// POST request to delete URL from database. Verifies that logged in user owns the URL before deleting.
+app.post("/urls/:id/delete", (req, res) => {
+  const id = req.params.id;
+  const userID = req.session.userID;
+  if (!userID) {
+    res.status(403);
+    return res.send('Must be logged in to delete URLs!');
   }
-  if (!emailMatch(email, users)) {
-    users[newID] = {
-      id: newID,
-      email: email,
-      password: bcrypt.hashSync(password, 10)
-    };
-    req.session.userID = newID;
+  if (!urlDatabase[id]) {
+    res.status(404);
+    return res.send('Shortened URL does not exist!');
+  }
+  if (urlDatabase[id]['userID'] !== userID) {
+    res.status(403);
+    return res.send('Not authorized to delete this URL!');
+  } else {
+    delete urlDatabase[id];
+    console.log(urlDatabase);
     res.redirect('/urls');
-  } else {
-    res.status(400);
-    console.log('Users after failure ====> ', users);
-    return res.send('Email already in use!');
   }
 });
 
-// Stops registration if user is already logged in.
-app.get("/register", (req, res) => {
-  const templateVars = {
-    urls: urlDatabase,
-    users: users,
-    userID: req.session.userID
-  };
-  if (templateVars.userID) {
-    return res.redirect('/urls');
+
+
+//EDITING URLS
+
+// POST request to update long URL for a specific short URL. Verifies that logged in user owns the URL before making changes.
+app.post("/urls/:id", (req, res) => {
+  const id = req.params['id'];
+  const newURL = req.body.longURL;
+  const userID = req.session.userID;
+  console.log('User ID cookie ====> ', userID);
+  console.log('User ID database ==> ', id);
+  if (!urlDatabase[id]) {
+    res.status(404);
+    return res.send('Shortened URL does not exist!');
   }
-  if (!templateVars.userID) {
-    res.render('register', templateVars);
+  if (!userID) {
+    res.status(403);
+    return res.send('Must be logged in to update URLs!');
+  }
+  if (urlDatabase[id]['userID'] !== userID) {
+    res.status(403);
+    return res.send('Not authorized to update this URL!');
   } else {
-    res.send(`You are already logged in as ${templateVars.userID}!`);
+    console.log('database before:', urlDatabase);
+    urlDatabase[id].longURL = newURL;
+    console.log('database after: ', urlDatabase);
+    res.redirect('/urls');
   }
 });
 
-app.get("/login", (req, res) => {
-  const templateVars = {
-    urls: urlDatabase,
-    users: users,
-    userID: req.session.userID
-  };
-  if (templateVars.userID) {
-    return res.redirect('/urls');
-  }
-  if (!templateVars.userID) {
-    res.render('login', templateVars);
-  } else {
-    res.send(`You are already logged in as ${templateVars.userID}!`);
-  }
-});
+
+
+
 
 
 
