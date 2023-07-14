@@ -30,19 +30,7 @@ const users = {
   }
 };
 
-const { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser, idMatch } = require('./helpers');
-
-
-const generateRandomString = function(len) {
-  const alphabetString = 'abcdefghijklmnopqrstuvwxyz';
-  let randomArray = [];
-  for (let i = 0; i < len; i++) {
-    let randomIndex = Math.floor(Math.random() * (alphabetString.length - 1));
-    randomArray.push(alphabetString[randomIndex]);
-  }
-  let randomURL = randomArray.join('');
-  return randomURL;
-};
+const { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser, idMatch, generateRandomString } = require('./helpers');
 
 app.get("/urls", (req, res) => {
   const templateVars = {
