@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const bcrypt = require("bcryptjs");
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
@@ -43,10 +43,10 @@ const users = {
 // GET request to access homepage. Will redrect to /urls if logged in, otherwise will redirect to login page.
 app.get("/", (req, res) => {
   const userID = req.session.userID;
-  if(!userID) {
+  if (!userID) {
     return res.redirect('/login');
   } else {
-    return res.redirect ('/urls');
+    return res.redirect('/urls');
   }
 });
 
@@ -199,10 +199,10 @@ app.get("/urls", (req, res) => {
 
 // GET request to view details of short URLs. Verifies that the URL exists and belongs to user before displaying.
 app.get("/urls/:id", (req, res) => {
-  if(!idMatch(req.params.id, urlDatabase)) {
+  if (!idMatch(req.params.id, urlDatabase)) {
     res.status(404);
     return res.send('URL not found!');
-  };
+  }
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
@@ -217,7 +217,7 @@ app.get("/urls/:id", (req, res) => {
   }
   const id = req.params.id;
   if (urlDatabase[id].userID !== templateVars.userID) {
-    console.log('test', urlDatabase[id].userID, templateVars.userID, urlDatabase)
+    console.log('test', urlDatabase[id].userID, templateVars.userID, urlDatabase);
     res.status(403);
     return res.send('Not authorized to view this URL!');
   }

@@ -69,4 +69,4 @@ const generateRandomString = function(len) {
   return randomURL;
 };
 
-module.exports = { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser, idMatch, generateRandomString }
+module.exports = { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser, idMatch, generateRandomString };
