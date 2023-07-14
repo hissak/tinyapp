@@ -73,13 +73,11 @@ app.get("/register", (req, res) => {
 
 //POST request generate new account, after verifying that all fields have been field, and email is not already in use.
 app.post("/register", (req, res) => {
-  console.log(req.body);
   const newID = generateRandomString(6);
   const email = req.body['email'];
   const password = req.body['password'];
   if (!email || !password) {
     res.status(400);
-    console.log('Users after failure ====> ', users);
     return res.send('Email/Password field cannot be blank!');
   }
   if (!emailMatch(email, users)) {
@@ -92,7 +90,6 @@ app.post("/register", (req, res) => {
     res.redirect('/urls');
   } else {
     res.status(400);
-    console.log('Users after failure ====> ', users);
     return res.send('Email already in use!');
   }
 });
@@ -120,7 +117,6 @@ app.get("/login", (req, res) => {
 
 //POST request to login and create new session. Verifies that login info is correct.
 app.post("/login", (req, res) => {
-  console.log(req.body);
   const formEmail = req.body['email'];
   const formPassword = req.body['password'];
   if (emailMatch(formEmail, users) && passwordMatch(formPassword, users)) {
@@ -160,7 +156,6 @@ app.post("/urls", (req, res) => {
     userID: req.session.userID
   };
   if (!templateVars.userID) {
-    console.log('URLs if logged out ===> ', urlDatabase);
     res.status(403);
     return res.send('Must be logged in to shorten URLs');
   }
@@ -170,7 +165,6 @@ app.post("/urls", (req, res) => {
     'longURL': longURL,
     'userID': templateVars['userID']
   };
-  console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -189,9 +183,6 @@ app.get("/urls", (req, res) => {
     res.status(403);
     return res.send('Must be logged in to view URLs');
   }
-  console.log('cookies ===> ', req.session);
-  console.log('users ===> ', users);
-  console.log('URLs ===> ', urlDatabase);
   const userURLs = urlsForUser(templateVars.userID, urlDatabase);
   templateVars.urls = userURLs;
   res.render("urls_index", templateVars);
@@ -209,19 +200,15 @@ app.get("/urls/:id", (req, res) => {
     userID: req.session.userID,
     users: users
   };
-  console.log('User ID cookie ====> ', templateVars.userID);
-  console.log('User ID database ==> ', templateVars.id);
   if (!templateVars.userID) {
     res.status(403);
     return res.send('Must be logged in to view URL.');
   }
   const id = req.params.id;
   if (urlDatabase[id].userID !== templateVars.userID) {
-    console.log('test', urlDatabase[id].userID, templateVars.userID, urlDatabase);
     res.status(403);
     return res.send('Not authorized to view this URL!');
   }
-  console.log('url database ==> ', urlDatabase);
   res.render("urls_show", templateVars);
 });
 
@@ -256,7 +243,6 @@ app.post("/urls/:id/delete", (req, res) => {
     return res.send('Not authorized to delete this URL!');
   } else {
     delete urlDatabase[id];
-    console.log(urlDatabase);
     res.redirect('/urls');
   }
 });
@@ -270,8 +256,6 @@ app.post("/urls/:id", (req, res) => {
   const id = req.params['id'];
   const newURL = req.body.longURL;
   const userID = req.session.userID;
-  console.log('User ID cookie ====> ', userID);
-  console.log('User ID database ==> ', id);
   if (!urlDatabase[id]) {
     res.status(404);
     return res.send('Shortened URL does not exist!');
@@ -284,9 +268,7 @@ app.post("/urls/:id", (req, res) => {
     res.status(403);
     return res.send('Not authorized to update this URL!');
   } else {
-    console.log('database before:', urlDatabase);
     urlDatabase[id].longURL = newURL;
-    console.log('database after: ', urlDatabase);
     res.redirect('/urls');
   }
 });
