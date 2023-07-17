@@ -208,7 +208,7 @@ app.get("/urls/:id", (req, res) => {
   if (userOwnsURL(id, userID, urlDatabase)) {
     return res.render("urls_show", templateVars);
   } else {
-    return res.status(403).send('Not authorized to delete URLs!');
+    return res.status(403).send('Not authorized view URL!');
   }
 });
 
