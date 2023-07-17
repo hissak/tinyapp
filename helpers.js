@@ -1,26 +1,18 @@
-const bcrypt = require("bcryptjs");
-
 // Checks user cookie to confirm that user is logged in with a valid account.
-const validUserLogin = function(user, database) {
-  if (database[user]) {
-    return true;
-  } else {
-    return false;
-  }
+const isValidUserLogin = function(user, database) {
+  return !!database[user];
 };
 
-//Returns user ID from user database, using email address as query
-const getUserIDByEmail = function(email, database) {
-  for (let user in database) {
-    if (database[user]['email'] === email) {
-      return database[user];
+// Returns user from user database, using email address as query
+const getUserByEmail = function(email, database) {
+  for (const userID in database) {
+    if (database[userID]['email'] === email) {
+      return database[userID];
     }
   }
-  return undefined;
 };
 
-
-//Returns a list of URLs that belong to the current user
+// Returns a list of URLs that belong to the current user
 const urlsForUser = function(id, database) {
   let userURLs = {};
   for (let shortURL in database) {
@@ -31,8 +23,7 @@ const urlsForUser = function(id, database) {
   return userURLs;
 };
 
-
-//Generates a random string of specified length. For use in generating new short URLs and new User IDs.
+// Generates a random string of specified length. For use in generating new short URLs and new User IDs.
 const generateRandomString = function(len) {
   const alphabetString = 'abcdefghijklmnopqrstuvwxyz';
   let randomArray = [];
@@ -44,12 +35,20 @@ const generateRandomString = function(len) {
   return randomURL;
 };
 
-//Boolean that returns true if current user owns a url (ie: userID and url.id match)
-const userOwnsURL = function(id, userID, database) {
-  if (!userID || !database[id] || database[id]['userID'] !== userID) {
-    return null;
+// Checks if i) user is logged in ii) URL exists in database and iii) user owns URL. Returns appropriate message and status code as an object
+// if any error case is run, otherwise remains undefined.
+const getError = function(userID, urlDatabase, shortURL) {
+  if (!userID) {
+    return { message: "You must be logged in to view URLs!", status: 403 };
   }
-  return true;
+
+  if (!urlDatabase.hasOwnProperty(shortURL)) {
+    return { message: "URL not found!", status: 404 };
+  }
+
+  if (urlDatabase[shortURL].userID !== userID) {
+    return { message: "Not authorized to view or modify URL!", status: 403 };
+  }
 };
 
-module.exports = { validUserLogin, getUserIDByEmail, urlsForUser, generateRandomString, userOwnsURL };
+module.exports = { isValidUserLogin, getUserByEmail, urlsForUser, generateRandomString, getError };
