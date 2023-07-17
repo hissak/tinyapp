@@ -194,15 +194,15 @@ app.get("/urls", (req, res) => {
 
 // GET request to view details of short URLs. Verifies that the URL exists and belongs to user before displaying.
 app.get("/urls/:id", (req, res) => {
+  if (!urlDatabase.hasOwnProperty(`${req.params.id}`)) {
+    return res.status(404).send('URL not found!');
+  }
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
     userID: req.session.userID,
     users: users
   };
-  if (!urlDatabase.hasOwnProperty(`${templateVars.id}`)) {
-    return res.status(404).send('URL not found!');
-  }
   const id = templateVars.id;
   const userID = templateVars.userID;
   if (userOwnsURL(id, userID, urlDatabase)) {
