@@ -37,7 +37,7 @@ const generateRandomString = function(len) {
 };
 
 //Boolean that returns true if current user owns a url (ie: userID and url.id match)
-const userOwnsURL = function(id) {
+const userOwnsURL = function(id, userID) {
   const userID = req.session.userID;
   if (!userID || !urlDatabase[id] || urlDatabase[id]['userID'] !== userID) {
     return null;
