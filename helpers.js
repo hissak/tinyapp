@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 
 
+
 //Returns user ID from user database, using email address as query
 const getUserIDByEmail = function(email, database) {
   for (let user in database) {
@@ -37,9 +38,8 @@ const generateRandomString = function(len) {
 };
 
 //Boolean that returns true if current user owns a url (ie: userID and url.id match)
-const userOwnsURL = function(id, user) {
-  const userID = req.session.userID;
-  if (!userID || !urlDatabase[id] || urlDatabase[id]['userID'] !== userID) {
+const userOwnsURL = function(id, userID, database) {
+  if (!userID || !database[id] || database[id]['userID'] !== userID) {
     return null;
   }
   return true
