@@ -145,7 +145,8 @@ app.post("/logout", (req, res) => {
 // GET request to access short URL generator only when logged in
 app.get("/urls/new", (req, res) => {
   const templateVars = { urls: urlDatabase, users: users, userID: req.session.userID };
-  if (!templateVars.userID) {
+  const userID = templateVars.userID;
+  if (!validUserLogin(userID, users)) {
     return res.redirect('/login');
   }
   res.render("urls_new", templateVars);
@@ -158,7 +159,8 @@ app.post("/urls", (req, res) => {
     users: users,
     userID: req.session.userID
   };
-  if (!templateVars.userID) {
+  const userID = templateVars.userID;
+  if (!validUserLogin(userID, users)) {
     return res.status(403).send('Must be logged in to shorten URLs');
   }
   const shortURL = generateRandomString(6);
