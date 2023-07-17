@@ -12,16 +12,6 @@ const getUserIDByEmail = function(email, database) {
 };
 
 
-//Checks if password from a form matches password in user database.
-const passwordMatch = function(password, database) {
-  for (let id in database) {
-    if (bcrypt.compareSync(password, database[id]['password'])) {
-      return true;
-    }
-  }
-  return null;
-};
-
 
 //Returns a list of URLs that belong to the current user
 const urlsForUser = function(id, database) {
@@ -58,4 +48,4 @@ const generateRandomString = function(len) {
   return randomURL;
 };
 
-module.exports = { getUserIDByEmail, passwordMatch, urlsForUser, idMatch, generateRandomString };
+module.exports = { getUserIDByEmail, urlsForUser, idMatch, generateRandomString };
