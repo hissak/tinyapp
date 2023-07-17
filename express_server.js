@@ -167,7 +167,7 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = {
     'longURL': longURL,
-    'userID': templateVars['userID']
+    'userID': userID
   };
   res.redirect(`/urls/${shortURL}`);
 });
@@ -183,10 +183,11 @@ app.get("/urls", (req, res) => {
     users: users,
     userID: req.session.userID
   };
-  if (!templateVars.userID) {
+  const userID = templateVars.userID;
+  if (validUserLogin(userID, users)) {
     return res.status(403).send('Must be logged in to view URLs');
   }
-  const userURLs = urlsForUser(templateVars.userID, urlDatabase);
+  const userURLs = urlsForUser(userID, urlDatabase);
   templateVars.urls = userURLs;
   res.render("urls_index", templateVars);
 });
