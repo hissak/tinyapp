@@ -14,7 +14,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-const { getUserIDByEmail, urlsForUser, generateRandomString } = require('./helpers');
+const { getUserIDByEmail, urlsForUser, generateRandomString, userOwnsURL } = require('./helpers');
 
 const urlDatabase = {
   b6UTxQ: {
@@ -221,17 +221,11 @@ app.get("/u/:id", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
   const userID = req.session.userID;
-  if (!userID) {
-    return res.status(403).send('Must be logged in to delete URLs!');
-  }
-  if (!urlDatabase[id]) {
-    return res.status(404).send('Shortened URL does not exist!');
-  }
-  if (urlDatabase[id]['userID'] !== userID) {
-    return res.status(403).send('Not authorized to delete this URL!');
-  } else {
+  if(userOwnsURL(id, userID)) {
     delete urlDatabase[id];
     res.redirect('/urls');
+  } else {
+    return res.status(403).send('Not authorized to delete URLs!')
   }
 });
 
