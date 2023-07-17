@@ -206,7 +206,7 @@ app.get("/urls/:id", (req, res) => {
 
 //GET request to access long URL via the short URL. Does not require user to be logged in. Verifies that short URL exists.
 app.get("/u/:id", (req, res) => {
-  if (!urlDatabase.hasOwnProperty(req.params.id)) {
+  if (!urlDatabase.hasOwnProperty(`${req.params.id}`)) {
     return res.status(404).send('URL not found!');
   }
   const longURL = urlDatabase[req.params.id].longURL;
