@@ -14,7 +14,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-const { getUserIDByEmail, emailMatch, passwordMatch, urlsForUser, idMatch, generateRandomString } = require('./helpers');
+const { getUserIDByEmail, passwordMatch, urlsForUser, idMatch, generateRandomString } = require('./helpers');
 
 const urlDatabase = {
   b6UTxQ: {
@@ -80,7 +80,7 @@ app.post("/register", (req, res) => {
     res.status(400);
     return res.send('Email/Password field cannot be blank!');
   }
-  if (!emailMatch(email, users)) {
+  if (!getUserIDByEmail(email, users)) {
     users[newID] = {
       id: newID,
       email: email,
@@ -119,10 +119,12 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const formEmail = req.body['email'];
   const formPassword = req.body['password'];
-  if (emailMatch(formEmail, users) && passwordMatch(formPassword, users)) {
-    const userID = getUserIDByEmail(formEmail, users);
-    req.session.userID = userID;
-    res.redirect('/urls');
+  if (getUserIDByEmail(formEmail, users)) {
+    const user = getUserIDByEmail(formEmail, users);
+    if (user.password === formPassword) {
+      req.session.userID = user.userID;
+      return res.redirect('/urls');
+    }
   } else {
     res.status(403);
     res.send('Email or Password incorrect!');
