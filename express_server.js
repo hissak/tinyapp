@@ -115,7 +115,7 @@ app.get("/login", (req, res) => {
   if (validUserLogin(userID, users)) {
     return res.redirect('/urls');
   } else {
-    res.render('login', templateVars);
+    return res.render('login', templateVars);
   }
 });
 
@@ -135,7 +135,7 @@ app.post("/login", (req, res) => {
 //POST request for logout. Clears session.
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect('/login');
+  return res.redirect('/login');
 });
 
 
@@ -149,7 +149,7 @@ app.get("/urls/new", (req, res) => {
   if (!validUserLogin(userID, users)) {
     return res.redirect('/login');
   }
-  res.render("urls_new", templateVars);
+  return res.render("urls_new", templateVars);
 });
 
 // POST request to generate new short URL. Verifies that user is logged in before generating anything.
@@ -169,7 +169,7 @@ app.post("/urls", (req, res) => {
     'longURL': longURL,
     'userID': userID
   };
-  res.redirect(`/urls/${shortURL}`);
+  return res.redirect(`/urls/${shortURL}`);
 });
 
 
@@ -189,7 +189,7 @@ app.get("/urls", (req, res) => {
   }
   const userURLs = urlsForUser(userID, urlDatabase);
   templateVars.urls = userURLs;
-  res.render("urls_index", templateVars);
+  return res.render("urls_index", templateVars);
 });
 
 // GET request to view details of short URLs. Verifies that the URL exists and belongs to user before displaying.
