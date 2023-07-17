@@ -96,7 +96,7 @@ app.post("/register", (req, res) => {
       password: bcrypt.hashSync(password, 10)
     };
     req.session.userID = newID;
-    res.redirect('/urls');
+    return res.redirect('/urls');
   } else {
     return res.status(400).send('Email already in use!');
   }

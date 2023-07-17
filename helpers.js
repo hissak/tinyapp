@@ -1,6 +1,13 @@
 const bcrypt = require("bcryptjs");
 
-
+// Checks user cookie to confirm that user is logged in with a valid account.
+const validUserLogin = function(user, database) {
+  if (database[user]) {
+    return true;
+  } else {
+    return false;
+  }
+};
 
 //Returns user ID from user database, using email address as query
 const getUserIDByEmail = function(email, database) {
@@ -45,4 +52,4 @@ const userOwnsURL = function(id, userID, database) {
   return true;
 };
 
-module.exports = { getUserIDByEmail, urlsForUser, generateRandomString, userOwnsURL };
+module.exports = { validUserLogin, getUserIDByEmail, urlsForUser, generateRandomString, userOwnsURL };
