@@ -1,21 +1,31 @@
+// Dependencies
 const express = require("express");
+
 const app = express();
+
 const PORT = 8080;
+
 const bcrypt = require("bcryptjs");
+
 const cookieSession = require('cookie-session');
+
 app.use(express.urlencoded({ extended: true }));
+
 app.use(cookieSession({
   name: 'session',
   keys: ['secretcookie'],
 }));
+
 app.set("view engine", "ejs");
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+// Functions from helpers.js
 const { getUserIDByEmail, urlsForUser, generateRandomString, userOwnsURL } = require('./helpers');
 
+//Database used to store information on shortened URLs
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -26,13 +36,13 @@ const urlDatabase = {
     userID: "aJ48lW",
   },
 };
-// password1 added to test password hashing and login.
-const password1 = bcrypt.hashSync("purple-monkey-dinosaur", 10);
+
+//Database used to store information on all registered users.
 const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: password1,
+    password: bcrypt.hashSync("hola", 10),
   }
 };
 
@@ -193,7 +203,7 @@ app.get("/urls/:id", (req, res) => {
   };
   if (!urlDatabase.hasOwnProperty(`${templateVars.id}`)) {
     return res.status(404).send('URL not found!');
-  };
+  }
   const id = templateVars.id;
   const userID = templateVars.userID;
   if (userOwnsURL(id, userID, urlDatabase)) {
@@ -220,11 +230,11 @@ app.get("/u/:id", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
   const userID = req.session.userID;
-  if(userOwnsURL(id, userID, urlDatabase)) {
+  if (userOwnsURL(id, userID, urlDatabase)) {
     delete urlDatabase[id];
     res.redirect('/urls');
   } else {
-    return res.status(403).send('Not authorized to delete URLs!')
+    return res.status(403).send('Not authorized to delete URLs!');
   }
 });
 
@@ -237,11 +247,11 @@ app.post("/urls/:id", (req, res) => {
   const id = req.params['id'];
   const newURL = req.body.longURL;
   const userID = req.session.userID;
-  if(userOwnsURL(id, userID, urlDatabase)) {
+  if (userOwnsURL(id, userID, urlDatabase)) {
     urlDatabase[id].longURL = newURL;
     return res.redirect('/urls');
   } else {
-    return res.status(403).send('Not authorized to view or edit this URL!')
+    return res.status(403).send('Not authorized to view or edit this URL!');
   }
 });
 

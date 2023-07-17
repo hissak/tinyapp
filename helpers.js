@@ -42,7 +42,7 @@ const userOwnsURL = function(id, userID, database) {
   if (!userID || !database[id] || database[id]['userID'] !== userID) {
     return null;
   }
-  return true
+  return true;
 };
 
 module.exports = { getUserIDByEmail, urlsForUser, generateRandomString, userOwnsURL };
