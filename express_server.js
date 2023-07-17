@@ -184,7 +184,7 @@ app.get("/urls", (req, res) => {
     userID: req.session.userID
   };
   const userID = templateVars.userID;
-  if (validUserLogin(userID, users)) {
+  if (!validUserLogin(userID, users)) {
     return res.status(403).send('Must be logged in to view URLs');
   }
   const userURLs = urlsForUser(userID, urlDatabase);
