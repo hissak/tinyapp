@@ -14,7 +14,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-const { getUserIDByEmail, urlsForUser, idMatch, generateRandomString } = require('./helpers');
+const { getUserIDByEmail, urlsForUser, generateRandomString } = require('./helpers');
 
 const urlDatabase = {
   b6UTxQ: {
@@ -212,9 +212,8 @@ app.get("/urls/:id", (req, res) => {
 
 //GET request to access long URL via the short URL. Does not require user to be logged in. Verifies that short URL exists.
 app.get("/u/:id", (req, res) => {
-  if (!idMatch(req.params.id, urlDatabase)) {
-    res.status(404);
-    return res.send('URL not found!');
+  if (!urlDatabase.hasOwnProperty(req.params.id)) {
+    return res.status(404).send('URL not found!');
   }
   const longURL = urlDatabase[req.params.id].longURL;
   return res.redirect(longURL);
