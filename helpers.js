@@ -36,4 +36,13 @@ const generateRandomString = function(len) {
   return randomURL;
 };
 
-module.exports = { getUserIDByEmail, urlsForUser, generateRandomString };
+//Boolean that returns true if current user owns a url (ie: userID and url.id match)
+const userOwnsURL = function(id) {
+  const userID = req.session.userID;
+  if (!userID || !urlDatabase[id] || urlDatabase[id]['userID'] !== userID) {
+    return null;
+  }
+  return true
+};
+
+module.exports = { getUserIDByEmail, urlsForUser, generateRandomString, userOwnsURL };
