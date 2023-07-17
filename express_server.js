@@ -238,17 +238,11 @@ app.post("/urls/:id", (req, res) => {
   const id = req.params['id'];
   const newURL = req.body.longURL;
   const userID = req.session.userID;
-  if (!urlDatabase[id]) {
-    return res.status(404).send('Shortened URL does not exist!');
-  }
-  if (!userID) {
-    return res.status(403).send('Must be logged in to update URLs!');
-  }
-  if (urlDatabase[id]['userID'] !== userID) {
-    return res.status(403).send('Not authorized to update this URL!');
-  } else {
+  if(userOwnsURL(id, userID, urlDatabase)) {
     urlDatabase[id].longURL = newURL;
-    res.redirect('/urls');
+    return res.redirect('/urls');
+  } else {
+    return res.status(403).send('Not authorized to view or edit this URL!')
   }
 });
 
