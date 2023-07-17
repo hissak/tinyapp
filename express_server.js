@@ -190,9 +190,8 @@ app.get("/urls", (req, res) => {
 
 // GET request to view details of short URLs. Verifies that the URL exists and belongs to user before displaying.
 app.get("/urls/:id", (req, res) => {
-  if (!idMatch(req.params.id, urlDatabase)) {
-    res.status(404);
-    return res.send('URL not found!');
+  if (!urlDatabase.hasOwnProperty(req.params.id)) {
+    return res.status(404).send('URL not found!');
   }
   const templateVars = {
     id: req.params.id,
@@ -206,8 +205,7 @@ app.get("/urls/:id", (req, res) => {
   }
   const id = req.params.id;
   if (urlDatabase[id].userID !== templateVars.userID) {
-    res.status(403);
-    return res.send('Not authorized to view this URL!');
+    return res.status(403).send('Not authorized to view this URL!');
   }
   res.render("urls_show", templateVars);
 });
