@@ -14,7 +14,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-const { getUserIDByEmail, passwordMatch, urlsForUser, idMatch, generateRandomString } = require('./helpers');
+const { getUserIDByEmail, urlsForUser, idMatch, generateRandomString } = require('./helpers');
 
 const urlDatabase = {
   b6UTxQ: {
@@ -119,12 +119,10 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const formEmail = req.body['email'];
   const formPassword = req.body['password'];
-  if (getUserIDByEmail(formEmail, users)) {
-    const user = getUserIDByEmail(formEmail, users);
-    if (user.password === formPassword) {
-      req.session.userID = user.userID;
-      return res.redirect('/urls');
-    }
+  const user = getUserIDByEmail(formEmail, users);
+  if (user && bcrypt.compareSync(formPassword, user.password)) {
+    req.session.userID = user.id;
+    return res.redirect('/urls');
   } else {
     res.status(403);
     res.send('Email or Password incorrect!');
