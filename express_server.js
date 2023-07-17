@@ -23,7 +23,7 @@ app.listen(PORT, () => {
 });
 
 // Functions from helpers.js
-const { getUserIDByEmail, urlsForUser, generateRandomString, userOwnsURL } = require('./helpers');
+const { validUserLogin, getUserIDByEmail, urlsForUser, generateRandomString, userOwnsURL } = require('./helpers');
 
 //Database used to store information on shortened URLs
 const urlDatabase = {
@@ -53,7 +53,7 @@ const users = {
 // GET request to access homepage. Will redrect to /urls if logged in, otherwise will redirect to login page.
 app.get("/", (req, res) => {
   const userID = req.session.userID;
-  if (!userID) {
+  if (!validUserLogin(userID, users)) {
     return res.redirect('/login');
   } else {
     return res.redirect('/urls');
@@ -71,13 +71,11 @@ app.get("/register", (req, res) => {
     users: users,
     userID: req.session.userID
   };
-  if (templateVars.userID) {
+  const userID = templateVars.userID;
+  if (validUserLogin(userID, users)) {
     return res.redirect('/urls');
-  }
-  if (!templateVars.userID) {
-    res.render('register', templateVars);
   } else {
-    return res.send(`You are already logged in as ${templateVars.userID}!`);
+    return res.render('register', templateVars);
   }
 });
 
