@@ -233,7 +233,7 @@ app.post("/urls/:id/delete", (req, res) => {
     delete urlDatabase[id];
     res.redirect('/urls');
   } else {
-    return res.status(403).send('Not authorized to delete URLs!');
+    return res.status(403).send('Not authorized to delete URL!');
   }
 });
 
