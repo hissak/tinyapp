@@ -111,13 +111,11 @@ app.get("/login", (req, res) => {
     users: users,
     userID: req.session.userID
   };
-  if (templateVars.userID) {
+  const userID = templateVars.userID;
+  if (validUserLogin(userID, users)) {
     return res.redirect('/urls');
-  }
-  if (!templateVars.userID) {
-    res.render('login', templateVars);
   } else {
-    return res.send(`You are already logged in as ${templateVars.userID}!`);
+    res.render('login', templateVars);
   }
 });
 
