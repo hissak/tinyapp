@@ -67,7 +67,7 @@ app.get("/register", (req, res) => {
   if (!templateVars.userID) {
     res.render('register', templateVars);
   } else {
-    res.send(`You are already logged in as ${templateVars.userID}!`);
+    return res.send(`You are already logged in as ${templateVars.userID}!`);
   }
 });
 
@@ -77,8 +77,7 @@ app.post("/register", (req, res) => {
   const email = req.body['email'];
   const password = req.body['password'];
   if (!email || !password) {
-    res.status(400);
-    return res.send('Email/Password field cannot be blank!');
+    return res.status(400).send('Email/Password field cannot be blank!');
   }
   if (!getUserIDByEmail(email, users)) {
     users[newID] = {
@@ -89,8 +88,7 @@ app.post("/register", (req, res) => {
     req.session.userID = newID;
     res.redirect('/urls');
   } else {
-    res.status(400);
-    return res.send('Email already in use!');
+    return res.status(400).send('Email already in use!');
   }
 });
 
@@ -111,7 +109,7 @@ app.get("/login", (req, res) => {
   if (!templateVars.userID) {
     res.render('login', templateVars);
   } else {
-    res.send(`You are already logged in as ${templateVars.userID}!`);
+    return res.send(`You are already logged in as ${templateVars.userID}!`);
   }
 });
 
@@ -124,8 +122,7 @@ app.post("/login", (req, res) => {
     req.session.userID = user.id;
     return res.redirect('/urls');
   } else {
-    res.status(403);
-    res.send('Email or Password incorrect!');
+    return res.status(403).send('Email or Password incorrect!');
   }
 });
 
@@ -156,8 +153,7 @@ app.post("/urls", (req, res) => {
     userID: req.session.userID
   };
   if (!templateVars.userID) {
-    res.status(403);
-    return res.send('Must be logged in to shorten URLs');
+    return res.status(403).send('Must be logged in to shorten URLs');
   }
   const shortURL = generateRandomString(6);
   const longURL = req.body.longURL;
@@ -180,8 +176,7 @@ app.get("/urls", (req, res) => {
     userID: req.session.userID
   };
   if (!templateVars.userID) {
-    res.status(403);
-    return res.send('Must be logged in to view URLs');
+    return res.status(403).send('Must be logged in to view URLs');
   }
   const userURLs = urlsForUser(templateVars.userID, urlDatabase);
   templateVars.urls = userURLs;
@@ -200,8 +195,7 @@ app.get("/urls/:id", (req, res) => {
     users: users
   };
   if (!templateVars.userID) {
-    res.status(403);
-    return res.send('Must be logged in to view URL.');
+    res.status(403).send('Must be logged in to view URL.');
   }
   const id = req.params.id;
   if (urlDatabase[id].userID !== templateVars.userID) {
@@ -228,16 +222,13 @@ app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
   const userID = req.session.userID;
   if (!userID) {
-    res.status(403);
-    return res.send('Must be logged in to delete URLs!');
+    return res.status(403).send('Must be logged in to delete URLs!');
   }
   if (!urlDatabase[id]) {
-    res.status(404);
-    return res.send('Shortened URL does not exist!');
+    return res.status(404).send('Shortened URL does not exist!');
   }
   if (urlDatabase[id]['userID'] !== userID) {
-    res.status(403);
-    return res.send('Not authorized to delete this URL!');
+    return res.status(403).send('Not authorized to delete this URL!');
   } else {
     delete urlDatabase[id];
     res.redirect('/urls');
@@ -254,16 +245,13 @@ app.post("/urls/:id", (req, res) => {
   const newURL = req.body.longURL;
   const userID = req.session.userID;
   if (!urlDatabase[id]) {
-    res.status(404);
-    return res.send('Shortened URL does not exist!');
+    return res.status(404).send('Shortened URL does not exist!');
   }
   if (!userID) {
-    res.status(403);
-    return res.send('Must be logged in to update URLs!');
+    return res.status(403).send('Must be logged in to update URLs!');
   }
   if (urlDatabase[id]['userID'] !== userID) {
-    res.status(403);
-    return res.send('Not authorized to update this URL!');
+    return res.status(403).send('Not authorized to update this URL!');
   } else {
     urlDatabase[id].longURL = newURL;
     res.redirect('/urls');
