@@ -12,7 +12,6 @@ const getUserIDByEmail = function(email, database) {
 };
 
 
-
 //Returns a list of URLs that belong to the current user
 const urlsForUser = function(id, database) {
   let userURLs = {};
@@ -22,17 +21,6 @@ const urlsForUser = function(id, database) {
     }
   }
   return userURLs;
-};
-
-
-//Checks if short URL from client matches one in URLs database.
-const idMatch = function(id, database) {
-  for (let key in database) {
-    if (key === id) {
-      return true;
-    }
-  }
-  return null;
 };
 
 
@@ -48,4 +36,4 @@ const generateRandomString = function(len) {
   return randomURL;
 };
 
-module.exports = { getUserIDByEmail, urlsForUser, idMatch, generateRandomString };
+module.exports = { getUserIDByEmail, urlsForUser, generateRandomString };
